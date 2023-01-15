@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import fpstimer
+from tensorflow import keras
 
 #credit to https://www.analyticsvidhya.com/blog/2020/04/vehicle-detection-opencv-python/ for the vehicle detection help.
 
@@ -17,7 +18,7 @@ def prepare_image(image):
   rotated_image = cv2.warpAffine(image, rotate_matrix, (w, h))
 
   #crop image over road section
-  cropped_image = rotated_image[400:1080, 800:1250] #constants defined by ME, where my webcam is.
+  cropped_image = rotated_image[400:1080, 900:1250] #constants defined by ME, where my webcam is.
 
   #rotate back 90 degrees to be "flat"
   derotated_image = cv2.rotate(cropped_image, cv2.ROTATE_90_CLOCKWISE)
@@ -46,15 +47,24 @@ while True:
   kernel = np.ones((9,9), np.uint8)
   dilated = cv2.dilate(threshold, kernel, iterations = 5)
 
+  #find the biggest blob
   contours, heirarchy = cv2.findContours(dilated.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
   main_contour = [None, 0]
   for contour in contours:
     if cv2.contourArea(contour) > main_contour[1]:
       main_contour = [contour, cv2.contourArea(contour)]
 
+  if cv2.boundingRect(main_contour[0]) == (0, 0, 0, 0):
+    continue
+
+  x, y, w, h = cv2.boundingRect(main_contour[0])
   cv2.drawContours(prepped_image, main_contour[0], -1, (127, 200, 0), 2)
 
-  cv2.imshow("image1", prepped_image)
+  #crop the car out of the photo to determine color
+  print(x, y, w, h)
+  car_image = prepped_image[y:y+h, x:x+w]
+
+  cv2.imshow("image1", car_image)
   
   if cv2.waitKey(33) == 27: #wait for ESC
     break
