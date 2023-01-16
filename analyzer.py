@@ -10,15 +10,18 @@ cam = cv2.VideoCapture(0, cv2.CAP_DSHOW)
 cam.set(3, 1920)
 cam.set(4, 1080)
 
+#load color neural network model
+model = keras.models.load_model("./model")
+
 def prepare_image(image):
   h, w = image.shape[:2]
 
-  #rotate image right 50 degrees
-  rotate_matrix = cv2.getRotationMatrix2D((w/2, h/2), 50, 1)
+  #rotate image right 41 degrees
+  rotate_matrix = cv2.getRotationMatrix2D((w/2, h/2), 40, 1)
   rotated_image = cv2.warpAffine(image, rotate_matrix, (w, h))
 
   #crop image over road section
-  cropped_image = rotated_image[400:1080, 900:1250] #constants defined by ME, where my webcam is.
+  cropped_image = rotated_image[400:1080, 900:1150] #constants defined by ME, where my webcam is.
 
   #rotate back 90 degrees to be "flat"
   derotated_image = cv2.rotate(cropped_image, cv2.ROTATE_90_CLOCKWISE)
@@ -61,8 +64,17 @@ while True:
   cv2.drawContours(prepped_image, main_contour[0], -1, (127, 200, 0), 2)
 
   #crop the car out of the photo to determine color
-  print(x, y, w, h)
+  car_area = cv2.contourArea(main_contour[0])
+  #full car countour area is around 60k pixels
   car_image = prepped_image[y:y+h, x:x+w]
+  if car_area >= 60000:
+    cv2.imwrite("car.jpg", car_image)
+    write_image = keras.preprocessing.image.load_img("./car.jpg", target_size=(180, 180))
+    input_arr = keras.preprocessing.image.img_to_array(write_image)
+    input_arr = np.array([input_arr])
+    input_arr = input_arr.astype('float32') / 255
+    predictions = model.predict(input_arr)
+    print(predictions)
 
   cv2.imshow("image1", car_image)
   
