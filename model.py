@@ -51,7 +51,7 @@ model.compile(
 trained_model = model.fit(
   train_ds,
   validation_data=test_ds,
-  epochs=3
+  epochs=30
 )
 
 model.save('./model')
