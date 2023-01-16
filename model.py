@@ -31,27 +31,32 @@ test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 num_classes = 15
 
 model = tf.keras.Sequential([
-  tf.keras.layers.Rescaling(1./255),
-  tf.keras.layers.Conv2D(32, 3, activation='relu'),
+  tf.keras.layers.Conv2D(16, (3,3), 1, activation='relu', input_shape=(180,180,3)),
   tf.keras.layers.MaxPooling2D(),
-  tf.keras.layers.Conv2D(32, 3, activation='relu'),
+  tf.keras.layers.Conv2D(32, (3,3), 1, activation='relu'),
   tf.keras.layers.MaxPooling2D(),
-  tf.keras.layers.Conv2D(32, 3, activation='relu'),
+  tf.keras.layers.Conv2D(16, (3,3), 1, activation='relu'),
   tf.keras.layers.MaxPooling2D(),
   tf.keras.layers.Flatten(),
-  tf.keras.layers.Dense(128, activation='relu'),
-  tf.keras.layers.Dense(num_classes)
+  tf.keras.layers.Dense(256, activation='relu'),
+  tf.keras.layers.Dense(num_classes, activation='softmax')
 ])
 
 model.compile(
   optimizer='adam',
-  loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+  loss=tf.keras.losses.sparse_categorical_crossentropy,
   metrics=['accuracy'])
+
+print(model.summary())
+tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir="./logs")
 
 trained_model = model.fit(
   train_ds,
   validation_data=test_ds,
-  epochs=30
+  epochs=3,
+  callbacks=[tensorboard_callback]
 )
 
-model.save('./model')
+print(model.evaluate())
+
+model.save('./softmax_model')

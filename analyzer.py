@@ -1,6 +1,9 @@
 import cv2
 import numpy as np
 import fpstimer
+import time
+from matplotlib import pyplot as plt
+import tensorflow as tf
 from tensorflow import keras
 
 #credit to https://www.analyticsvidhya.com/blog/2020/04/vehicle-detection-opencv-python/ for the vehicle detection help.
@@ -11,7 +14,7 @@ cam.set(3, 1920)
 cam.set(4, 1080)
 
 #load color neural network model
-model = keras.models.load_model("./model")
+model = keras.models.load_model("./softmax_model")
 
 def prepare_image(image):
   h, w = image.shape[:2]
@@ -61,22 +64,19 @@ while True:
     continue
 
   x, y, w, h = cv2.boundingRect(main_contour[0])
-  cv2.drawContours(prepped_image, main_contour[0], -1, (127, 200, 0), 2)
+  #cv2.drawContours(prepped_image, main_contour[0], -1, (127, 200, 0), 2)
 
   #crop the car out of the photo to determine color
   car_area = cv2.contourArea(main_contour[0])
   #full car countour area is around 60k pixels
-  car_image = prepped_image[y:y+h, x:x+w]
+  
   if car_area >= 60000:
-    cv2.imwrite("car.jpg", car_image)
-    write_image = keras.preprocessing.image.load_img("./car.jpg", target_size=(180, 180))
-    input_arr = keras.preprocessing.image.img_to_array(write_image)
-    input_arr = np.array([input_arr])
-    input_arr = input_arr.astype('float32') / 255
-    predictions = model.predict(input_arr)
-    print(predictions)
+    car_image = prepped_image[y:y+h, x:x+w]
+    resize = tf.image.resize(car_image, (180, 180))
+    prediction = model.predict(np.expand_dims(resize/255, 0))
+    print(prediction)
 
-  cv2.imshow("image1", car_image)
+    #cv2.imshow("image1", car_image)
   
   if cv2.waitKey(33) == 27: #wait for ESC
     break
