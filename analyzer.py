@@ -72,11 +72,12 @@ while True:
   
   if car_area >= 60000:
     car_image = prepped_image[y:y+h, x:x+w]
-    resize = tf.image.resize(car_image, (180, 180))
-    prediction = model.predict(np.expand_dims(resize/255, 0))
-    print(prediction)
+    cv2.imwrite("car.jpg", car_image)
+    time.sleep(5)
+    #resize = tf.image.resize(car_image, (180, 180))
+    #prediction = model.predict(np.expand_dims(resize/255, 0))
+    #print(prediction)
 
-    #cv2.imshow("image1", car_image)
   
   if cv2.waitKey(33) == 27: #wait for ESC
     break

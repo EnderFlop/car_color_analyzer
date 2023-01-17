@@ -53,10 +53,10 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir="./logs")
 trained_model = model.fit(
   train_ds,
   validation_data=test_ds,
-  epochs=3,
+  epochs=15,
   callbacks=[tensorboard_callback]
 )
 
-print(model.evaluate())
+#print(model.evaluate())
 
 model.save('./softmax_model')

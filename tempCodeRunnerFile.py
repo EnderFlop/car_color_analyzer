@@ -1,1 +1,1 @@
-write_image
+tf.keras.losses.sparse_categorical_crossentropy
